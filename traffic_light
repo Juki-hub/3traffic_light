@@ -1,0 +1,221 @@
+#include <TM1637Display.h>
+
+//LIGHT1(kiri)
+#define red1      4
+#define yellow1   3
+#define green1    2
+
+//LIGHT2(tengah)
+#define red2      28
+#define yellow2   30
+#define green2    32
+
+//LIGHT3(kanan)
+#define red3      26
+#define yellow3   24
+#define green3    22
+
+//SEGMENT1(kiri)
+#define DIO1      50
+#define CLK1      52
+
+//SEGMENT2(tengah)
+#define DIO2      46
+#define CLK2      48
+
+//SEGMENT3(kanan)
+#define DIO3      8
+#define CLK3      9
+
+uint8_t data[] = { 0xff, 0xff, 0xff, 0xff };
+uint8_t blank[] = { 0x00, 0x00, 0x00, 0x00 };
+
+int kondisi = 0;
+int timered1 = 11;
+int timeyellow1 = 3;
+int timegreen1 = 6;
+int timered2 = 10 + timered1;
+int timeyellow2 = 2;
+int timegreen2 = 6;
+int timered3 = 7;
+int timeyellow3 = 3;
+int timegreen3 = 9;
+TM1637Display display1(CLK1, DIO1);
+TM1637Display display2(CLK2, DIO2);
+TM1637Display display3(CLK3, DIO3);
+void setup() {
+  // put your setup code here, to run once:
+  display1.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  display3.setBrightness(0x0f);
+  pinMode(red1, OUTPUT);
+  pinMode(red2, OUTPUT);
+  pinMode(red3, OUTPUT);
+  pinMode(yellow1, OUTPUT);
+  pinMode(yellow2, OUTPUT);
+  pinMode(yellow3, OUTPUT);
+  pinMode(green1, OUTPUT);
+  pinMode(green2, OUTPUT);
+  pinMode(green3, OUTPUT);
+}
+
+void loop() {
+  while (kondisi == 0) {
+    digitalWrite(red1, HIGH);
+    digitalWrite(yellow1, LOW);
+    digitalWrite(green1, LOW);
+    digitalWrite(red2, HIGH);
+    digitalWrite(yellow2, LOW);
+    digitalWrite(green2, LOW);
+    digitalWrite(red3, LOW);
+    digitalWrite(yellow3, LOW);
+    digitalWrite(green3, HIGH);
+    kondisi = 99;
+    timered2 = timegreen3 + timered1;
+  }
+
+  while (kondisi == 99) {
+    timered1 = timegreen3;
+    timered2--;
+    timegreen3--;
+    timered1--;
+    display1.showNumberDec(timered1);
+    display2.showNumberDec(timered2);
+    display3.showNumberDec(timegreen3);
+    delay(500);
+    if (timegreen3 == 0) {
+      kondisi = 1;
+      timegreen3 = 0;
+    }
+    if (timered1 == 0) {
+      kondisi = 1;
+    }
+
+  }
+  while (kondisi == 1) {
+
+    if (timered1 == 0) {
+      kondisi = 2;
+    }
+    timered3 = 21;
+    timered1--;
+    timered2--;
+    timered3--;
+    
+    if (timered1 <= 0) {
+      timered1 = 0;
+    }
+    display1.showNumberDec(timered1);
+    display2.showNumberDec(timered2);
+    display3.showNumberDec(timered3);
+    delay(500);
+
+  }
+  while (kondisi == 2) {
+    digitalWrite(green3, LOW);
+    digitalWrite(red3, HIGH);
+    digitalWrite(red1, LOW);
+    digitalWrite(yellow1, HIGH);
+    digitalWrite(green1, LOW);
+    kondisi = 3;
+
+  }
+  while (kondisi == 3) {
+    timeyellow1--;
+    timered2--;
+    timered3--;
+    display3.showNumberDec(timered3);
+    display2.showNumberDec(timered2);
+    display1.showNumberDec(timeyellow1);
+    delay(500);
+    if (timeyellow1 == 0) {
+      kondisi = 4;
+    }
+  }
+  while (kondisi == 4) {
+    digitalWrite(red1, LOW);
+    digitalWrite(yellow1, LOW);
+    digitalWrite(green1, HIGH);
+    kondisi = 5;
+
+  }
+  while (kondisi == 5) {
+    timegreen1=timered2;
+    timegreen1--;
+    timered2--;
+    timered3--;
+    display3.showNumberDec(timered3);
+    display2.showNumberDec(timered2);
+    display1.showNumberDec(timegreen1);
+    delay(500);
+    if (timegreen1 == 0) {
+      kondisi = 6;
+      digitalWrite(red1, HIGH);
+      digitalWrite(yellow1, LOW);
+      digitalWrite(green1, LOW);
+
+    }
+  }
+  //1 loop done
+  while (kondisi == 6) {
+    timered1 = timeyellow2 + timegreen2 + 10;
+    digitalWrite(red2, LOW);
+    digitalWrite(yellow2, HIGH);
+    digitalWrite(green2, LOW);
+    kondisi = 7;
+  }
+  while (kondisi == 7) {
+    timeyellow2--;
+    timered1--;
+    timered3--;
+    display3.showNumberDec(timered3);
+    display1.showNumberDec(timered1);
+    display2.showNumberDec(timeyellow2);
+    delay(500);
+    if (timeyellow2 == 0) {
+      kondisi = 8;
+    }
+  }
+  while (kondisi == 8) {
+    digitalWrite(red2, LOW);
+    digitalWrite(yellow2, LOW);
+    digitalWrite(green2, HIGH);
+    timered3=timegreen2;
+    kondisi = 9;
+    
+  }
+  while (kondisi == 9) {
+    timegreen2--;
+    timered1--;
+    timered3--;
+    display3.showNumberDec(timered3);
+    display1.showNumberDec(timered1);
+    display2.showNumberDec(timegreen2);
+    delay(500);
+    if (timegreen2 == 0) {
+      kondisi = 10;
+      digitalWrite(red2, HIGH);
+      digitalWrite(red3, LOW);
+      digitalWrite(green2, LOW);
+      digitalWrite(yellow3, HIGH);
+    }
+  }
+  while (kondisi == 10) {
+    timeyellow3--;
+    display3.showNumberDec(timeyellow3);
+    delay(500);
+    if (timeyellow3 == 1) {
+      kondisi = 0;
+      timered1 = 11;
+      timeyellow1 = 3;
+      timegreen1 = 8;
+      timered2 = 10 + timered1;
+      timeyellow2 = 2;
+      timegreen2 = 8;
+      timered3 = 7;
+      timeyellow3 = 3;
+      timegreen3 = 10;
+      timered3 = timeyellow1 + timegreen1 + timeyellow2 + timegreen2;
+    }
+  }
+}
